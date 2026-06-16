@@ -108,10 +108,10 @@ whose `dark`/`light` modes use VARIABLE_ALIAS references to the primitive variab
   group/token hierarchy. Drag a token or whole group onto another group to **move/reparent**
   it (drop on empty space for root); clicking a node filters the table to it. Moves go
   through Save-with-diff. Name collisions are rejected.
-- **Live preview** (right panel) renders the dark and light themes **side by side** as a
-  sample Mini-Nation UI from the resolved token values, in the real **IBM Plex Mono**
-  webfont with token-driven sizes/weights. Editing a primitive or either theme updates both
-  previews instantly. Toggle the panel with the **Preview** button.
+- **Live preview** (right panel) is structure-driven, so it's meaningful for any token
+  set: color tokens render as **swatch ramps** (grouped by their parent group, resolved
+  through aliases), numeric tokens as **scales/bars**, and font/size tokens as **type
+  samples**. It previews the file you're editing and updates live. Toggle with **Preview**.
 - **Export CSS** — generate `tokens.css` in Figma slash notation (`--surface\/base`),
   core + dark in `:root`, light in a `prefers-color-scheme` query. Matches the app's
   existing `src/styles/tokens.css`.

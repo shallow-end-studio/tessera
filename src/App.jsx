@@ -70,9 +70,7 @@ export default function App() {
             )}
           </div>
 
-          {s.showPreview && (
-            <PreviewPanel darkTheme={s.darkTheme} lightTheme={s.lightTheme} primitives={s.livePrimitives} />
-          )}
+          {s.showPreview && <PreviewPanel tree={s.previewTree} bases={s.previewBases} label={s.previewLabel} />}
         </div>
       </main>
 

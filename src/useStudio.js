@@ -187,10 +187,11 @@ export function useStudio() {
   const cmpDirty =
     compare && (diffTrees(cmp.darkOrig, cmp.dark).length > 0 || diffTrees(cmp.lightOrig, cmp.light).length > 0);
 
-  // Preview: the themed collection's dark/light files over the primitive layer.
-  const livePrimitives = liveOrCache(model.primaryFile);
-  const darkTheme = compare ? cmp.dark : liveOrCache(model.themedDark);
-  const lightTheme = compare ? cmp.light : liveOrCache(model.themedLight);
+  // Preview: auto-render the file being edited (or the dark themed file in compare),
+  // resolving its aliases through the tier base.
+  const previewTree = compare ? cmp.dark : tree;
+  const previewBases = compare ? baseTreesFor(model.themedDark) : baseTreesFor(active);
+  const previewLabel = compare ? model.themedDark : active;
 
   const resolveValue = (token) =>
     isAlias(token.$value) ? resolveAlias(token.$value, tree, ...baseTreesFor(active)) : null;
@@ -310,7 +311,7 @@ export function useStudio() {
     files, dir, active, tree, compare, cmp, dirty, query, status, modal, showTree, showPreview,
     // derived
     rows, allRows, cmpRows, issues, cmpDirty, resolveValue,
-    darkTheme, lightTheme, livePrimitives, primitivesTree: livePrimitives,
+    previewTree, previewBases, previewLabel, primitivesTree: liveOrCache(model.primaryFile),
     // setters
     setQuery, setModal, setShowTree, setShowPreview,
     // actions
