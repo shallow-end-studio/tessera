@@ -1,0 +1,175 @@
+{
+  "$description": "Example primitive palette (neutral demo set \u2014 not a real product's tokens).",
+  "palette": {
+    "slate": {
+      "50": {
+        "$type": "color",
+        "$value": "#f8fafc"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "#f1f5f9"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#cbd5e1"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#64748b"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#334155"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#0f172a"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "#020617"
+      }
+    },
+    "blue": {
+      "300": {
+        "$type": "color",
+        "$value": "#93c5fd"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#3b82f6"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#1d4ed8"
+      }
+    },
+    "red": {
+      "300": {
+        "$type": "color",
+        "$value": "#fca5a5"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#ef4444"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#b91c1c"
+      }
+    },
+    "amber": {
+      "300": {
+        "$type": "color",
+        "$value": "#fcd34d"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#f59e0b"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#b45309"
+      }
+    },
+    "green": {
+      "300": {
+        "$type": "color",
+        "$value": "#86efac"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#22c55e"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#15803d"
+      }
+    },
+    "neutral": {
+      "200": {
+        "$type": "color",
+        "$value": "#e5e5e5"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#737373"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#171717"
+      }
+    },
+    "white": {
+      "$type": "color",
+      "$value": "#ffffff"
+    }
+  },
+  "spacing": {
+    "8": {
+      "$type": "number",
+      "$value": 8
+    },
+    "16": {
+      "$type": "number",
+      "$value": 16
+    }
+  },
+  "radius": {
+    "8": {
+      "$type": "number",
+      "$value": 8
+    }
+  },
+  "text": {
+    "font": {
+      "mono": {
+        "$type": "fontFamily",
+        "$value": [
+          "IBM Plex Mono"
+        ]
+      }
+    },
+    "size": {
+      "10": {
+        "$type": "number",
+        "$value": 10
+      },
+      "12": {
+        "$type": "number",
+        "$value": 12
+      },
+      "16": {
+        "$type": "number",
+        "$value": 16
+      }
+    },
+    "weight": {
+      "regular": {
+        "$type": "number",
+        "$value": 400
+      },
+      "medium": {
+        "$type": "number",
+        "$value": 500
+      },
+      "bold": {
+        "$type": "number",
+        "$value": 700
+      }
+    },
+    "line-height": {
+      "24": {
+        "$type": "number",
+        "$value": 24
+      }
+    },
+    "tracking": {
+      "wide": {
+        "$type": "number",
+        "$value": 0.8
+      }
+    }
+  }
+}

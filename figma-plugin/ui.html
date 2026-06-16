@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        font: 12px/1.5 -apple-system, system-ui, sans-serif;
+        margin: 0;
+        padding: 16px;
+        color: #1a1a1a;
+      }
+      h1 { font-size: 13px; margin: 0 0 4px; }
+      p.sub { color: #888; margin: 0 0 16px; }
+      label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
+      input {
+        width: 100%; box-sizing: border-box; padding: 6px 8px; margin-bottom: 14px;
+        border: 1px solid #ddd; border-radius: 6px; font: inherit;
+      }
+      button {
+        width: 100%; padding: 9px; margin-bottom: 8px; border: 0; border-radius: 6px;
+        font: inherit; font-weight: 600; cursor: pointer; color: #fff; background: #0d99ff;
+      }
+      button.secondary { background: #f0f0f0; color: #333; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      #log {
+        margin-top: 12px; padding: 8px; border-radius: 6px; background: #f7f7f7;
+        font-family: ui-monospace, monospace; font-size: 11px; white-space: pre-wrap;
+        color: #444; min-height: 32px;
+      }
+      #log.error { background: #fff0f0; color: #c00; }
+    </style>
+  </head>
+  <body>
+    <h1>Tessera Bridge</h1>
+    <p class="sub">Sync Figma Variables with your local token files.</p>
+
+    <label>Tessera server</label>
+    <input id="server" value="http://localhost:5180" />
+
+    <button id="pull">⤵ Pull Figma → Tessera</button>
+    <button id="push" class="secondary">⤴ Push Tessera → Figma</button>
+
+    <div id="log">Ready.</div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const server = () => $('server').value.replace(/\/$/, '');
+      function log(msg, isError) {
+        const el = $('log');
+        el.textContent = msg;
+        el.className = isError ? 'error' : '';
+      }
+      const busy = (b) => {
+        $('pull').disabled = b;
+        $('push').disabled = b;
+      };
+
+      // Pull: ask the main thread for Variables → DTCG, then POST to the server.
+      $('pull').onclick = () => {
+        busy(true);
+        log('Reading Figma variables…');
+        parent.postMessage({ pluginMessage: { type: 'export' } }, '*');
+      };
+
+      // Push: read token files from the server, hand them to the main thread.
+      $('push').onclick = async () => {
+        busy(true);
+        try {
+          log('Fetching token files…');
+          const list = await fetch(server() + '/api/tokens').then((r) => r.json());
+          const files = {};
+          for (const name of list.files || []) {
+            const res = await fetch(server() + '/api/tokens/' + encodeURIComponent(name)).then((r) => r.json());
+            files[name] = res.content;
+          }
+          log('Writing ' + Object.keys(files).length + ' file(s) to Figma…');
+          parent.postMessage({ pluginMessage: { type: 'import', files } }, '*');
+        } catch (err) {
+          busy(false);
+          log('Server error: ' + err.message + '\nIs `npm run dev` running?', true);
+        }
+      };
+
+      // Messages back from the main thread.
+      window.onmessage = async (event) => {
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+        if (msg.type === 'exported') {
+          try {
+            const res = await fetch(server() + '/api/import', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ files: msg.files }),
+            }).then((r) => r.json());
+            log('Pulled ✓ wrote: ' + (res.written || []).join(', '));
+          } catch (err) {
+            log('Server error: ' + err.message + '\nIs `npm run dev` running?', true);
+          }
+          busy(false);
+        } else if (msg.type === 'imported') {
+          const s = msg.summary;
+          log('Pushed ✓ ' + s.created + ' created, ' + s.updated + ' updated, ' + s.aliases + ' aliased.');
+          busy(false);
+        } else if (msg.type === 'error') {
+          log('Figma error: ' + msg.message, true);
+          busy(false);
+        }
+      };
+    </script>
+  </body>
+</html>

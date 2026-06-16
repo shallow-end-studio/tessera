@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# your real, local token set — Tessera edits these but they are NOT part of the
+# tool. Point Tessera at an app's tokens; the examples/ fixture ships instead.
+/tokens/
+
+# editor / tooling config (per-machine)
+.claude/
+
+# os / misc
+.DS_Store
+*.local

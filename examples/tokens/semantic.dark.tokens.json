@@ -1,0 +1,131 @@
+{
+  "$description": "Example semantic \u2014 dark mode (aliases primitives).",
+  "surface": {
+    "base": {
+      "$type": "color",
+      "$value": "{palette.slate.950}"
+    }
+  },
+  "text": {
+    "strong": {
+      "$type": "color",
+      "$value": "{palette.slate.100}"
+    },
+    "body": {
+      "$type": "color",
+      "$value": "{palette.slate.300}"
+    }
+  },
+  "border": {
+    "subtle": {
+      "$type": "color",
+      "$value": "{palette.slate.700}"
+    }
+  },
+  "tab": {
+    "surface": {
+      "rest": {
+        "$type": "color",
+        "$value": "{palette.slate.900}"
+      },
+      "selected": {
+        "$type": "color",
+        "$value": "{palette.slate.900}"
+      }
+    },
+    "text": {
+      "rest": {
+        "$type": "color",
+        "$value": "{palette.slate.300}"
+      },
+      "selected": {
+        "$type": "color",
+        "$value": "{palette.slate.100}"
+      }
+    },
+    "border": {
+      "selected": {
+        "$type": "color",
+        "$value": "{palette.blue.500}"
+      }
+    }
+  },
+  "player": {
+    "red": {
+      "surface": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.red.500}"
+        }
+      },
+      "border": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.red.300}"
+        }
+      }
+    },
+    "yellow": {
+      "surface": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.amber.500}"
+        }
+      },
+      "border": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.amber.300}"
+        }
+      }
+    },
+    "blue": {
+      "surface": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.blue.500}"
+        }
+      },
+      "border": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.blue.300}"
+        }
+      }
+    },
+    "green": {
+      "surface": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.green.500}"
+        }
+      },
+      "border": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.green.300}"
+        }
+      }
+    },
+    "city": {
+      "text": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.white}"
+        }
+      },
+      "surface": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.neutral.500}"
+        }
+      },
+      "border": {
+        "rest": {
+          "$type": "color",
+          "$value": "{palette.neutral.200}"
+        }
+      }
+    }
+  }
+}

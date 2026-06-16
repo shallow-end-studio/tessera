@@ -1,0 +1,12 @@
+{
+  "name": "Tessera Bridge",
+  "id": "tessera-bridge",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["http://localhost:5180", "http://127.0.0.1:5180"],
+    "reasoning": "Reads/writes design tokens from the local Tessera dev server."
+  }
+}
