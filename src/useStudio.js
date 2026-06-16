@@ -13,6 +13,7 @@ import {
   diffTrees,
 } from './model/dtcg.js';
 import { toCss } from './model/toCss.js';
+import { applyTextReplace, applyRename } from './model/search.js';
 import { api, coerceNewValue } from './api.js';
 
 // All of Tessera's state, derived data, and actions. The structure (collections,
@@ -30,6 +31,8 @@ export function useStudio() {
   const [showTree, setShowTree] = useState(true);
   const [compare, setCompare] = useState(false);
   const [cmp, setCmp] = useState({ dark: null, light: null, darkOrig: null, lightOrig: null });
+  const [search, setSearch] = useState(false);
+  const [searchMap, setSearchMap] = useState({}); // { file: tree } across all files, for global search
   const [dirty, setDirty] = useState(false);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
@@ -81,6 +84,7 @@ export function useStudio() {
   const load = useCallback((name) => {
     api.read(name).then(({ content }) => {
       setCompare(false);
+      setSearch(false);
       setActive(name);
       setTree(content);
       setOriginal(content);
@@ -88,6 +92,33 @@ export function useStudio() {
       setQuery('');
       setStatus('');
     });
+  }, []);
+
+  // Open a token from a search result: load its file and filter the table to it.
+  const jumpTo = useCallback((file, name) => {
+    api.read(file).then(({ content }) => {
+      setCompare(false);
+      setSearch(false);
+      setActive(file);
+      setTree(content);
+      setOriginal(content);
+      setDirty(false);
+      setStatus('');
+      setQuery(name);
+    });
+  }, []);
+
+  // Enter global-search mode: load every token file into searchMap.
+  const enterSearch = useCallback(async () => {
+    setSearch(true);
+    setCompare(false);
+    setActive(null);
+    setStatus('');
+    const { files } = await api.list();
+    const entries = await Promise.all(
+      (files || []).map((f) => api.read(f).then((r) => [f, r.content]).catch(() => [f, null])),
+    );
+    setSearchMap(Object.fromEntries(entries.filter(([, c]) => c)));
   }, []);
 
   useEffect(() => {
@@ -236,6 +267,22 @@ export function useStudio() {
     setModal(null);
   };
 
+  // ─── global search / replace ────────────────────────────────────────────────
+  const previewMultiFile = (changedMap, title) => {
+    const changes = [];
+    for (const [file, tree] of Object.entries(changedMap)) {
+      for (const c of diffTrees(searchMap[file], tree)) changes.push({ key: `${file} · ${c.key}`, from: c.from, to: c.to });
+    }
+    if (!changes.length) return setStatus('Nothing to replace');
+    setModal({ kind: 'diff', multiFile: true, files: changedMap, changes, title });
+  };
+  const doTextReplace = (find, repl, scopes) =>
+    previewMultiFile(applyTextReplace(searchMap, find, repl, scopes), `Replace “${find}” → “${repl}”`);
+  const doRename = (from, to) => {
+    if (!from.trim() || !to.trim()) return setStatus('Both From and To are required');
+    previewMultiFile(applyRename(searchMap, from.trim(), to.trim()), `Rename ${from.trim()} → ${to.trim()}`);
+  };
+
   // ─── save / export / import ─────────────────────────────────────────────────
   const save = () => {
     if (compare) {
@@ -253,8 +300,18 @@ export function useStudio() {
 
   const doWrite = async () => {
     const isCompare = modal?.compare;
+    const multi = modal?.multiFile && modal.files;
     setModal(null);
     setStatus('Saving…');
+    if (multi) {
+      const names = Object.keys(multi);
+      await Promise.all(names.map((n) => api.write(n, multi[n])));
+      setSearchMap((m) => ({ ...m, ...multi }));
+      setCache((c) => ({ ...c, ...multi }));
+      if (active && multi[active]) load(active); // refresh the open file if it changed
+      setStatus(`Updated ${names.length} file${names.length === 1 ? '' : 's'}`);
+      return;
+    }
     if (isCompare) {
       const [r1, r2] = await Promise.all([api.write(model.themedDark, cmp.dark), api.write(model.themedLight, cmp.light)]);
       if (r1.ok && r2.ok) {
@@ -309,6 +366,8 @@ export function useStudio() {
   return {
     // state
     files, dir, active, tree, compare, cmp, dirty, query, status, modal, showTree, showPreview,
+    search, searchMap,
+    setSearch, enterSearch, jumpTo, doTextReplace, doRename,
     // derived
     rows, allRows, cmpRows, issues, cmpDirty, resolveValue,
     previewTree, previewBases, previewLabel, primitivesTree: liveOrCache(model.primaryFile),

@@ -18,9 +18,11 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
             ? modal.mode === 'new'
               ? 'New token file'
               : 'Rename file'
-            : `Review ${modal.changes.length} change${modal.changes.length > 1 ? 's' : ''} → ${
-                modal.compare ? 'dark + light themes' : active
-              }`;
+            : modal.title
+              ? `${modal.title} · ${modal.changes.length} change${modal.changes.length > 1 ? 's' : ''}`
+              : `Review ${modal.changes.length} change${modal.changes.length > 1 ? 's' : ''} → ${
+                  modal.compare ? 'dark + light themes' : active
+                }`;
 
   const field =
     'rounded border border-white/15 bg-black/30 px-2 py-1.5 font-mono outline-none focus:border-white/30';

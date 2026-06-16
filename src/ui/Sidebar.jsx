@@ -7,8 +7,10 @@ export default function Sidebar({
   files,
   active,
   compare,
+  search,
   dirty,
   onOpenCompare,
+  onOpenSearch,
   onNewFile,
   onLoad,
   onRenameFile,
@@ -26,6 +28,14 @@ export default function Sidebar({
         </div>
       </div>
       <nav className="flex-1 overflow-auto p-2">
+        <button
+          onClick={onOpenSearch}
+          className={`block w-full truncate rounded px-3 py-2 text-left text-xs ${
+            search ? 'bg-indigo-500/30 text-white' : 'text-white/70 hover:bg-white/5'
+          }`}
+        >
+          🔍 Search &amp; replace
+        </button>
         <button
           onClick={onOpenCompare}
           className={`mb-1 block w-full truncate rounded px-3 py-2 text-left text-xs ${

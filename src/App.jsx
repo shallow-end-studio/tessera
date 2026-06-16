@@ -5,6 +5,7 @@ import TreeRail from './ui/TreeRail.jsx';
 import EditorTable from './ui/EditorTable.jsx';
 import CompareTable from './ui/CompareTable.jsx';
 import PreviewPanel from './ui/PreviewPanel.jsx';
+import SearchView from './ui/SearchView.jsx';
 import ModalHost from './ui/ModalHost.jsx';
 
 export default function App() {
@@ -17,8 +18,10 @@ export default function App() {
         files={s.files}
         active={s.active}
         compare={s.compare}
+        search={s.search}
         dirty={s.dirty}
         onOpenCompare={s.openCompare}
+        onOpenSearch={s.enterSearch}
         onNewFile={() => s.setModal({ kind: 'file', mode: 'new', name: '' })}
         onLoad={s.load}
         onRenameFile={(f) => s.setModal({ kind: 'file', mode: 'rename', orig: f, name: f })}
@@ -26,13 +29,23 @@ export default function App() {
         onReorder={s.moveFile}
       />
 
-      {s.showTree && !s.compare && s.tree && (
+      {s.showTree && !s.compare && !s.search && s.tree && (
         <aside className="w-60 shrink-0">
           <TreeRail tree={s.tree} onMove={s.moveTreeNode} onSelect={s.setQuery} />
         </aside>
       )}
 
       <main className="flex flex-1 flex-col overflow-hidden">
+        {s.search ? (
+          <SearchView
+            filesMap={s.searchMap}
+            onJump={s.jumpTo}
+            onReplace={s.doTextReplace}
+            onRename={s.doRename}
+            onClose={() => (s.files.length ? s.load(s.files[0]) : s.setSearch(false))}
+          />
+        ) : (
+          <>
         <Toolbar
           compare={s.compare}
           active={s.active}
@@ -72,6 +85,8 @@ export default function App() {
 
           {s.showPreview && <PreviewPanel tree={s.previewTree} bases={s.previewBases} label={s.previewLabel} />}
         </div>
+          </>
+        )}
       </main>
 
       <ModalHost
