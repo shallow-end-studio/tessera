@@ -158,9 +158,11 @@ export function fileApi(options = {}) {
             return json(res, 200, { dir: tokensDir, files });
           }
 
-          // GET /api/config — the resolved token structure (collections/modes/preview)
+          // GET /api/config — the resolved token structure (collections/modes/preview).
+          // Re-read fresh so edits to tessera.config.json apply on a browser reload
+          // (no process restart needed).
           if (req.method === 'GET' && url.pathname === '/api/config') {
-            return json(res, 200, config);
+            return json(res, 200, loadConfig(rootDir));
           }
 
           // GET /api/order — saved sidebar order
