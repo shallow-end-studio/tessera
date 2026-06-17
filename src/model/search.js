@@ -114,6 +114,45 @@ export function applyCrossFileMove(filesMap, fromFile, fromDotted, targetFile, t
   return changed;
 }
 
+// Ungroup: dissolve the group at `groupDotted` in `file`, promoting its children
+// to the parent level, and rewrite aliases across all files to drop the group
+// segment. Returns { file: newTree } for changed files, or null on a collision.
+export function applyUngroup(filesMap, file, groupDotted) {
+  const groupSegs = groupDotted.split('.');
+  const groupKey = groupSegs[groupSegs.length - 1];
+  const parentSegs = groupSegs.slice(0, -1);
+  const parentDotted = parentSegs.join('.');
+  const grp = getAt(filesMap[file], groupSegs);
+  if (!grp || typeof grp !== 'object' || '$value' in grp) return {}; // not a group
+  const childKeys = Object.keys(grp).filter((k) => !k.startsWith('$'));
+
+  const clone = structuredClone(filesMap[file]);
+  let parentNode = clone;
+  for (const s of parentSegs) parentNode = parentNode[s];
+  for (const c of childKeys) if (parentNode[c] !== undefined) return null; // sibling collision
+  for (const c of childKeys) parentNode[c] = parentNode[groupKey][c];
+  delete parentNode[groupKey];
+
+  const map = { ...filesMap, [file]: clone };
+  const rewriteLeaf = (token) => {
+    const v = token.$value;
+    if (typeof v === 'string' && isAlias(v)) {
+      const inner = v.slice(1, -1);
+      if (inner.startsWith(groupDotted + '.')) {
+        const rest = inner.slice(groupDotted.length + 1);
+        return { ...token, $value: `{${parentDotted ? `${parentDotted}.${rest}` : rest}}` };
+      }
+    }
+    return token;
+  };
+  const changed = {};
+  for (const f of Object.keys(map)) {
+    const next = rebuild(map[f], { renameKey: null, leaf: rewriteLeaf });
+    if (JSON.stringify(next) !== JSON.stringify(filesMap[f])) changed[f] = next;
+  }
+  return changed;
+}
+
 // Token-aware rename: move the token/group at `fromDotted` to `toDotted` AND
 // rewrite every alias that references it (or a descendant) across all files.
 export function applyRename(filesMap, fromDotted, toDotted) {

@@ -39,6 +39,7 @@ export default function App() {
             onSelect={s.setQuery}
             onNodeDragStart={s.startNodeDrag}
             onNodeDragEnd={s.endNodeDrag}
+            onUngroup={s.ungroupGroup}
           />
         </aside>
       )}

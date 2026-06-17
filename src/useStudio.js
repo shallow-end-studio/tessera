@@ -13,7 +13,7 @@ import {
   diffTrees,
 } from './model/dtcg.js';
 import { toCss } from './model/toCss.js';
-import { applyTextReplace, applyRename, applyCrossFileMove } from './model/search.js';
+import { applyTextReplace, applyRename, applyCrossFileMove, applyUngroup } from './model/search.js';
 import { api, coerceNewValue } from './api.js';
 
 // All of Tessera's state, derived data, and actions. The structure (collections,
@@ -270,6 +270,23 @@ export function useStudio() {
     setDirty(true);
   };
 
+  // Ungroup: dissolve a group, promote its children, rewrite aliases — previewed.
+  const ungroupGroup = async (groupPath) => {
+    const dotted = groupPath.join('.');
+    const { files } = await api.list();
+    const entries = await Promise.all(
+      (files || []).map((f) => (f === active ? [f, tree] : api.read(f).then((r) => [f, r.content]).catch(() => [f, null]))),
+    );
+    const allMap = Object.fromEntries(entries.filter(([, c]) => c));
+    const changed = applyUngroup(allMap, active, dotted);
+    if (changed === null) return setStatus(`Can't ungroup "${dotted}" — a child name collides with a sibling`);
+    if (!Object.keys(changed).length) return setStatus('Nothing to ungroup');
+    const changes = [];
+    for (const [file, t] of Object.entries(changed))
+      for (const c of diffTrees(allMap[file], t)) changes.push({ key: `${file} · ${c.key}`, from: c.from, to: c.to });
+    setModal({ kind: 'diff', multiFile: true, files: changed, changes, title: `Ungroup ${dotted}` });
+  };
+
   const moveTreeNode = (fromPath, toGroupPath) => {
     const next = moveNode(tree, fromPath, toGroupPath);
     if (next === null) return setStatus(`"${fromPath[fromPath.length - 1]}" already exists in that group`);
@@ -432,7 +449,7 @@ export function useStudio() {
     files, dir, active, tree, compare, cmp, dirty, query, status, modal, showTree, showPreview,
     mode, search, searchMap, dragNode,
     setMode, enterSearch, jumpTo, doTextReplace, doRename,
-    startNodeDrag, endNodeDrag, dropNodeToFile, applyMove,
+    startNodeDrag, endNodeDrag, dropNodeToFile, applyMove, ungroupGroup,
     // derived
     rows, allRows, cmpRows, issues, cmpDirty, resolveValue, aliasTargets, compareTargets,
     previewTree, previewBases, previewLabel, primitivesTree: primaryTree,
