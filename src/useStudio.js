@@ -270,6 +270,30 @@ export function useStudio() {
     setDirty(true);
   };
 
+  // Rename a node (group or token) in place — alias-aware, previewed.
+  const renameNode = (path) => setModal({ kind: 'renameNode', path, name: path[path.length - 1] });
+  const applyRenameNode = async () => {
+    const { path, name } = modal;
+    const g = name.trim().replace(/^\/+|\/+$/g, '');
+    if (!g) return setStatus('Name is required');
+    if (g === path[path.length - 1]) return setModal(null);
+    const parent = path.slice(0, -1);
+    const fromDotted = path.join('.');
+    const toDotted = [...parent, g].join('.');
+    const { files } = await api.list();
+    const entries = await Promise.all(
+      (files || []).map((f) => (f === active ? [f, tree] : api.read(f).then((r) => [f, r.content]).catch(() => [f, null]))),
+    );
+    const allMap = Object.fromEntries(entries.filter(([, c]) => c));
+    if (getAt(allMap[active], toDotted.split('.')) !== undefined) return setStatus(`"${g}" already exists here`);
+    const changed = applyRename(allMap, fromDotted, toDotted);
+    if (!Object.keys(changed).length) return setStatus('Nothing to rename');
+    const changes = [];
+    for (const [file, t] of Object.entries(changed))
+      for (const c of diffTrees(allMap[file], t)) changes.push({ key: `${file} · ${c.key}`, from: c.from, to: c.to });
+    setModal({ kind: 'diff', multiFile: true, files: changed, changes, title: `Rename ${fromDotted} → ${toDotted}` });
+  };
+
   // Group: wrap a node in a new parent group (reuse the name to collect siblings).
   const groupNode = (path) => setModal({ kind: 'group', path, name: '' });
   const applyGroupWrap = async () => {
@@ -474,6 +498,7 @@ export function useStudio() {
     mode, search, searchMap, dragNode,
     setMode, enterSearch, jumpTo, doTextReplace, doRename,
     startNodeDrag, endNodeDrag, dropNodeToFile, applyMove, ungroupGroup, groupNode, applyGroupWrap,
+    renameNode, applyRenameNode,
     // derived
     rows, allRows, cmpRows, issues, cmpDirty, resolveValue, aliasTargets, compareTargets,
     previewTree, previewBases, previewLabel, primitivesTree: primaryTree,

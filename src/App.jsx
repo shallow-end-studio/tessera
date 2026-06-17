@@ -41,6 +41,7 @@ export default function App() {
             onNodeDragEnd={s.endNodeDrag}
             onUngroup={s.ungroupGroup}
             onGroup={s.groupNode}
+            onRename={s.renameNode}
           />
         </aside>
       )}
@@ -85,7 +86,7 @@ export default function App() {
                 resolveValue={s.resolveValue}
                 targets={s.aliasTargets}
                 onValue={s.onValue}
-                onRename={(name) => s.setModal({ kind: 'token', mode: 'rename', origPath: name, name })}
+                onRename={(name) => s.renameNode(name.split('/'))}
                 onDelete={s.deleteToken}
               />
             )}
@@ -111,6 +112,7 @@ export default function App() {
         onWrite={s.doWrite}
         onApplyMove={s.applyMove}
         onApplyGroup={s.applyGroupWrap}
+        onApplyRename={s.applyRenameNode}
       />
     </div>
   );

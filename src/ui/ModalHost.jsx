@@ -2,7 +2,7 @@ import { TOKEN_TYPES } from '../api.js';
 
 // Renders the active modal (css / import / token / file / diff). All state lives
 // in the parent; this is the presentation + which-action-button-to-show switch.
-export default function ModalHost({ modal, active, setModal, onSubmitToken, onSubmitFile, onApplyImport, onCopy, onWrite, onApplyMove, onApplyGroup }) {
+export default function ModalHost({ modal, active, setModal, onSubmitToken, onSubmitFile, onApplyImport, onCopy, onWrite, onApplyMove, onApplyGroup, onApplyRename }) {
   if (!modal) return null;
 
   const title =
@@ -10,7 +10,9 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
       ? 'Generated tokens.css'
       : modal.kind === 'import'
         ? 'Import DTCG JSON'
-        : modal.kind === 'group'
+        : modal.kind === 'renameNode'
+          ? 'Rename'
+          : modal.kind === 'group'
           ? 'Wrap in a new group'
           : modal.kind === 'move'
           ? `Move into ${modal.targetFile}`
@@ -101,6 +103,22 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
               className={field}
             />
             <span className="mt-1 text-[11px] text-white/30">“.tokens.json” is appended if you omit an extension.</span>
+          </div>
+        ) : modal.kind === 'renameNode' ? (
+          <div className="m-4 flex flex-col gap-2 text-xs">
+            <span className="text-white/50">
+              Rename <span className="font-mono text-white/80">{modal.path.join('/')}</span>
+            </span>
+            <input
+              autoFocus
+              value={modal.name}
+              onChange={(e) => setModal({ ...modal, name: e.target.value })}
+              onKeyDown={(e) => e.key === 'Enter' && onApplyRename()}
+              className={field}
+            />
+            <span className="text-[11px] text-white/30">
+              Renames in place; every {'{alias}'} pointing at it (or its children) updates to match.
+            </span>
           </div>
         ) : modal.kind === 'group' ? (
           <div className="m-4 flex flex-col gap-2 text-xs">
@@ -193,6 +211,11 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
           {modal.kind === 'group' && (
             <button onClick={onApplyGroup} className={primary}>
               Group
+            </button>
+          )}
+          {modal.kind === 'renameNode' && (
+            <button onClick={onApplyRename} className={primary}>
+              Rename
             </button>
           )}
           {modal.kind === 'token' && (

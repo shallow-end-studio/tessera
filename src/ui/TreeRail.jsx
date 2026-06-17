@@ -18,7 +18,7 @@ function allGroupPaths(tree, prefix = [], out = new Set()) {
 // A structure rail: the active file's group/token hierarchy. Tokens and groups
 // are draggable; dropping onto a group moves the node into it (kept-key reparent).
 // Dropping on empty space moves to the root. Clicking filters the table.
-export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDragStart, onNodeDragEnd, onUngroup, onGroup }) {
+export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDragStart, onNodeDragEnd, onUngroup, onGroup, onRename }) {
   const [expanded, setExpanded] = useState(() => new Set(kids(tree || {}).map((k) => k))); // top level open
   const [dragPath, setDragPath] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
@@ -68,6 +68,18 @@ export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDra
           <span className="text-white/25">•</span>
           <span className="truncate">{name}</span>
           <span className="ml-auto shrink-0 text-[9px] uppercase text-white/25">{(node.$type || '')[0]}</span>
+          {onRename && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRename(path);
+              }}
+              title="Rename"
+              className="shrink-0 px-1 text-white/30 opacity-0 transition hover:text-white group-hover:opacity-100"
+            >
+              ✎
+            </button>
+          )}
           {onGroup && (
             <button
               onClick={(e) => {
@@ -116,6 +128,18 @@ export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDra
           <span className="w-3 shrink-0 text-white/40">{open ? '▾' : '▸'}</span>
           <span className="truncate font-medium text-white/85">{name}</span>
           <span className="ml-auto shrink-0 text-[9px] text-white/25">{kids(node).length}</span>
+          {onRename && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRename(path);
+              }}
+              title="Rename group"
+              className="shrink-0 px-1 text-white/30 opacity-0 transition hover:text-white group-hover:opacity-100"
+            >
+              ✎
+            </button>
+          )}
           {onGroup && (
             <button
               onClick={(e) => {
