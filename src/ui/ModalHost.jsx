@@ -2,7 +2,7 @@ import { TOKEN_TYPES } from '../api.js';
 
 // Renders the active modal (css / import / token / file / diff). All state lives
 // in the parent; this is the presentation + which-action-button-to-show switch.
-export default function ModalHost({ modal, active, setModal, onSubmitToken, onSubmitFile, onApplyImport, onCopy, onWrite, onApplyMove }) {
+export default function ModalHost({ modal, active, setModal, onSubmitToken, onSubmitFile, onApplyImport, onCopy, onWrite, onApplyMove, onApplyGroup }) {
   if (!modal) return null;
 
   const title =
@@ -10,7 +10,9 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
       ? 'Generated tokens.css'
       : modal.kind === 'import'
         ? 'Import DTCG JSON'
-        : modal.kind === 'move'
+        : modal.kind === 'group'
+          ? 'Wrap in a new group'
+          : modal.kind === 'move'
           ? `Move into ${modal.targetFile}`
           : modal.kind === 'token'
           ? modal.mode === 'add'
@@ -100,6 +102,26 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
             />
             <span className="mt-1 text-[11px] text-white/30">“.tokens.json” is appended if you omit an extension.</span>
           </div>
+        ) : modal.kind === 'group' ? (
+          <div className="m-4 flex flex-col gap-2 text-xs">
+            <span className="text-white/50">
+              Wrap <span className="font-mono text-white/80">{modal.path.join('/')}</span> in a new group
+            </span>
+            <label className="flex flex-col gap-1">
+              <span className="text-white/50">New group name</span>
+              <input
+                autoFocus
+                value={modal.name}
+                onChange={(e) => setModal({ ...modal, name: e.target.value })}
+                onKeyDown={(e) => e.key === 'Enter' && onApplyGroup()}
+                placeholder="e.g. Style"
+                className={field}
+              />
+            </label>
+            <span className="text-[11px] text-white/30">
+              Re-use the same name on sibling groups to collect them under one parent. Aliases update to match.
+            </span>
+          </div>
         ) : modal.kind === 'move' ? (
           <div className="m-4 flex flex-col gap-2 text-xs">
             <span className="text-white/50">
@@ -166,6 +188,11 @@ export default function ModalHost({ modal, active, setModal, onSubmitToken, onSu
           {modal.kind === 'move' && (
             <button onClick={onApplyMove} className={primary}>
               Preview changes
+            </button>
+          )}
+          {modal.kind === 'group' && (
+            <button onClick={onApplyGroup} className={primary}>
+              Group
             </button>
           )}
           {modal.kind === 'token' && (

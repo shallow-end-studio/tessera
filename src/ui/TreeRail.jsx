@@ -18,7 +18,7 @@ function allGroupPaths(tree, prefix = [], out = new Set()) {
 // A structure rail: the active file's group/token hierarchy. Tokens and groups
 // are draggable; dropping onto a group moves the node into it (kept-key reparent).
 // Dropping on empty space moves to the root. Clicking filters the table.
-export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDragStart, onNodeDragEnd, onUngroup }) {
+export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDragStart, onNodeDragEnd, onUngroup, onGroup }) {
   const [expanded, setExpanded] = useState(() => new Set(kids(tree || {}).map((k) => k))); // top level open
   const [dragPath, setDragPath] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
@@ -61,15 +61,25 @@ export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDra
           onClick={() => onSelect(pathStr)}
           style={{ paddingLeft: indent }}
           title={pathStr}
-          className={`flex cursor-grab items-center gap-1.5 rounded py-1 pr-2 text-xs hover:bg-white/5 ${
+          className={`group flex cursor-grab items-center gap-1.5 rounded py-1 pr-2 text-xs hover:bg-white/5 ${
             dragging ? 'opacity-40' : ''
           } ${activePath === pathStr ? 'bg-indigo-500/20 text-white' : 'text-white/65'}`}
         >
           <span className="text-white/25">•</span>
           <span className="truncate">{name}</span>
-          <span className="ml-auto shrink-0 text-[9px] uppercase text-white/25">
-            {(node.$type || '')[0]}
-          </span>
+          <span className="ml-auto shrink-0 text-[9px] uppercase text-white/25">{(node.$type || '')[0]}</span>
+          {onGroup && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onGroup(path);
+              }}
+              title="Wrap in a new group"
+              className="shrink-0 px-1 text-white/30 opacity-0 transition hover:text-white group-hover:opacity-100"
+            >
+              ⤵
+            </button>
+          )}
         </div>
       );
     }
@@ -106,6 +116,18 @@ export default function TreeRail({ tree, onMove, onSelect, activePath, onNodeDra
           <span className="w-3 shrink-0 text-white/40">{open ? '▾' : '▸'}</span>
           <span className="truncate font-medium text-white/85">{name}</span>
           <span className="ml-auto shrink-0 text-[9px] text-white/25">{kids(node).length}</span>
+          {onGroup && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onGroup(path);
+              }}
+              title="Wrap in a new group"
+              className="shrink-0 px-1 text-white/30 opacity-0 transition hover:text-white group-hover:opacity-100"
+            >
+              ⤵
+            </button>
+          )}
           {onUngroup && (
             <button
               onClick={(e) => {

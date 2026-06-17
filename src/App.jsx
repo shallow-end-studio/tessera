@@ -40,6 +40,7 @@ export default function App() {
             onNodeDragStart={s.startNodeDrag}
             onNodeDragEnd={s.endNodeDrag}
             onUngroup={s.ungroupGroup}
+            onGroup={s.groupNode}
           />
         </aside>
       )}
@@ -109,6 +110,7 @@ export default function App() {
         onCopy={s.copyText}
         onWrite={s.doWrite}
         onApplyMove={s.applyMove}
+        onApplyGroup={s.applyGroupWrap}
       />
     </div>
   );

@@ -270,6 +270,30 @@ export function useStudio() {
     setDirty(true);
   };
 
+  // Group: wrap a node in a new parent group (reuse the name to collect siblings).
+  const groupNode = (path) => setModal({ kind: 'group', path, name: '' });
+  const applyGroupWrap = async () => {
+    const { path, name } = modal;
+    const g = name.trim().replace(/^\/+|\/+$/g, '');
+    if (!g) return setStatus('Group name is required');
+    const parent = path.slice(0, -1);
+    const last = path[path.length - 1];
+    const fromDotted = path.join('.');
+    const toDotted = [...parent, g, last].join('.');
+    const { files } = await api.list();
+    const entries = await Promise.all(
+      (files || []).map((f) => (f === active ? [f, tree] : api.read(f).then((r) => [f, r.content]).catch(() => [f, null]))),
+    );
+    const allMap = Object.fromEntries(entries.filter(([, c]) => c));
+    if (getAt(allMap[active], toDotted.split('.')) !== undefined) return setStatus(`"${toDotted}" already exists`);
+    const changed = applyRename(allMap, fromDotted, toDotted);
+    if (!Object.keys(changed).length) return setStatus('Nothing to group');
+    const changes = [];
+    for (const [file, t] of Object.entries(changed))
+      for (const c of diffTrees(allMap[file], t)) changes.push({ key: `${file} · ${c.key}`, from: c.from, to: c.to });
+    setModal({ kind: 'diff', multiFile: true, files: changed, changes, title: `Group ${last} into ${[...parent, g].join('/')}` });
+  };
+
   // Ungroup: dissolve a group, promote its children, rewrite aliases — previewed.
   const ungroupGroup = async (groupPath) => {
     const dotted = groupPath.join('.');
@@ -449,7 +473,7 @@ export function useStudio() {
     files, dir, active, tree, compare, cmp, dirty, query, status, modal, showTree, showPreview,
     mode, search, searchMap, dragNode,
     setMode, enterSearch, jumpTo, doTextReplace, doRename,
-    startNodeDrag, endNodeDrag, dropNodeToFile, applyMove, ungroupGroup,
+    startNodeDrag, endNodeDrag, dropNodeToFile, applyMove, ungroupGroup, groupNode, applyGroupWrap,
     // derived
     rows, allRows, cmpRows, issues, cmpDirty, resolveValue, aliasTargets, compareTargets,
     previewTree, previewBases, previewLabel, primitivesTree: primaryTree,
