@@ -141,6 +141,7 @@ export function useStudio() {
   const openCompare = useCallback(async () => {
     const [d, l] = await Promise.all([api.read(model.themedDark), api.read(model.themedLight)]);
     setCompare(true);
+    setSearch(false);
     setActive(null);
     setQuery('');
     setStatus('');
