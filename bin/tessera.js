@@ -69,12 +69,30 @@ function initConfig() {
       fileCount++;
     }
   } else if (existsSync(dir)) {
-    // Flat layout: <collection>.<mode>.tokens.json
-    for (const f of readdirSync(dir).filter((f) => f.endsWith('.json') && !f.startsWith('.') && !f.startsWith('$'))) {
-      const base = f.replace(/\.tokens\.json$/, '').replace(/\.json$/, '');
-      const [name, mode] = base.split('.');
-      (byName[name] ||= { name, files: {} }).files[mode || 'default'] = f;
-      fileCount++;
+    const ok = (n) => n.endsWith('.json') && !n.startsWith('.') && !n.startsWith('$');
+    const ents = readdirSync(dir, { withFileTypes: true });
+    const subdirs = ents.filter((e) => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('$'));
+    const topFiles = ents.filter((e) => e.isFile() && ok(e.name)).map((e) => e.name);
+
+    if (subdirs.length && !topFiles.length) {
+      // Folder-per-collection (Figma variable export): <collection>/<Mode>.json
+      for (const sd of subdirs) {
+        const modeFiles = readdirSync(path.join(dir, sd.name)).filter(ok);
+        const single = modeFiles.length === 1;
+        for (const f of modeFiles) {
+          const mode = single ? 'default' : f.replace(/\.tokens\.json$/, '').replace(/\.json$/, '').toLowerCase();
+          (byName[sd.name] ||= { name: sd.name, files: {} }).files[mode] = `${sd.name}/${f}`;
+          fileCount++;
+        }
+      }
+    } else {
+      // Flat layout: <collection>.<mode>.tokens.json
+      for (const f of topFiles) {
+        const base = f.replace(/\.tokens\.json$/, '').replace(/\.json$/, '');
+        const [name, mode] = base.split('.');
+        (byName[name] ||= { name, files: {} }).files[mode || 'default'] = f;
+        fileCount++;
+      }
     }
   }
   const collections = Object.values(byName).sort((a, b) => rankCollection(a.name) - rankCollection(b.name));
